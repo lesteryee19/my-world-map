@@ -41,50 +41,45 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. 初始化地圖：中心點設在 [20, 0]，縮放等級 2
-        const map = L.map('map').setView([20, 0], 2);
+    // 初始化地圖：重點在於 worldCopyJump 與 minZoom/maxZoom 的配合
+    const map = L.map('map', {
+        worldCopyJump: true,      // 當你滑過經線 180 度時，它會自動把你「傳送」回原點，實現無限循環
+        center: [20, 0],          // 初始中心點
+        zoom: 2,                  // 初始縮放
+        minZoom: 2,               // 限制最小縮放，避免縮太小時同時看到兩個世界
+        maxBoundsViscosity: 0.5,
+        bounceAtZoomLimits: true
+    });
 
-        // 2. 載入底圖 (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+    // 換上一個更像 Google Maps 的乾淨底圖
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap',
+        noWrap: false             // 必須設為 false，地圖才會連續拼接
+    }).addTo(map);
 
-        // 3. 從 LocalStorage 讀取舊資料
-        let savedLocations = JSON.parse(localStorage.getItem('my_map_marks')) || [];
+    // --- 以下是你原本的 LocalStorage 存檔功能 ---
+    let savedLocations = JSON.parse(localStorage.getItem('my_map_marks')) || [];
+    savedLocations.forEach(loc => {
+        L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
+    });
 
-        // 4. 網頁開啟時，把存過的點畫出來
-        savedLocations.forEach(loc => {
-            L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
-        });
-
-        // 5. 點擊地圖的新增邏輯
-        map.on('click', function(e) {
-            const text = prompt("你想為這個地點標註什麼？");
-            
-            if (text) {
-                // 在地圖上畫出圖釘
-                L.marker(e.latlng).addTo(map).bindPopup(text).openPopup();
-
-                // 儲存資料到陣列
-                const newLoc = {
-                    lat: e.latlng.lat,
-                    lng: e.latlng.lng,
-                    text: text
-                };
-                savedLocations.push(newLoc);
-
-                // 同步到瀏覽器的 LocalStorage (存檔)
-                localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
-            }
-        });
-
-        // 6. 清除功能的函式
-        function clearMap() {
-            if(confirm("確定要刪除所有標記嗎？這動作無法復原喔！")) {
-                localStorage.removeItem('my_map_marks');
-                location.reload(); // 重新整理網頁
-            }
+    map.on('click', function(e) {
+        const text = prompt("你想為這個地點標註什麼？");
+        if (text) {
+            L.marker(e.latlng).addTo(map).bindPopup(text).openPopup();
+            const newLoc = { lat: e.latlng.lat, lng: e.latlng.lng, text: text };
+            savedLocations.push(newLoc);
+            localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
         }
+    });
+
+    function clearMap() {
+        if(confirm("確定要刪除所有標記嗎？")) {
+            localStorage.removeItem('my_map_marks');
+            location.reload();
+        }
+    }
+</script>
     </script>
 </body>
 </html>
