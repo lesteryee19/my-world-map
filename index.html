@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -127,4 +128,95 @@
         }
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的可編輯世界地圖</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* 設定地圖與頁面樣式 */
+        body { margin: 0; padding: 0; font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f4f4; }
+        header { background: #333; color: white; padding: 10px; text-align: center; }
+        #map { height: 80vh; width: 95%; margin: 10px auto; border: 2px solid #333; border-radius: 8px; }
+        .controls { text-align: center; margin: 10px; }
+        button { 
+            padding: 8px 16px; 
+            background-color: #e74c3c; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        button:hover { background-color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>我的自訂編輯地圖</h1>
+    </header>
+
+    <div class="controls">
+        <button onclick="clearMap()">🗑️ 清空所有標記</button>
+        <p style="font-size: 0.9em; color: #666;">提示：點擊地圖任何地方即可新增標記</p>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. 初始化地圖：中心點設在 [20, 0]，縮放等級 2
+        const map = L.map('map').setView([20, 0], 2);
+
+        // 2. 載入底圖 (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // 3. 從 LocalStorage 讀取舊資料
+        let savedLocations = JSON.parse(localStorage.getItem('my_map_marks')) || [];
+
+        // 4. 網頁開啟時，把存過的點畫出來
+        savedLocations.forEach(loc => {
+            L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
+        });
+
+        // 5. 點擊地圖的新增邏輯
+        map.on('click', function(e) {
+            const text = prompt("你想為這個地點標註什麼？");
+            
+            if (text) {
+                // 在地圖上畫出圖釘
+                L.marker(e.latlng).addTo(map).bindPopup(text).openPopup();
+
+                // 儲存資料到陣列
+                const newLoc = {
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    text: text
+                };
+                savedLocations.push(newLoc);
+
+                // 同步到瀏覽器的 LocalStorage (存檔)
+                localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
+            }
+        });
+
+        // 6. 清除功能的函式
+        function clearMap() {
+            if(confirm("確定要刪除所有標記嗎？這動作無法復原喔！")) {
+                localStorage.removeItem('my_map_marks');
+                location.reload(); // 重新整理網頁
+            }
+        }
+    </script>
+</body>
+>>>>>>> 0a17e3ab9b09e2d413440e76ae8a4cae56c454e9
 </html>

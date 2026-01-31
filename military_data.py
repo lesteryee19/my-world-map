@@ -1,36 +1,21 @@
-import json
-
-# 假設這是你從軍事新聞 (如 USNI) 或開放數據中收集到的座標
-# 你可以利用之前練習過的 Web Scraping 技術來自動更新這些數據
 military_units = [
-    {
-        "name": "羅斯福號航空母艦 (USS Theodore Roosevelt)",
-        "lat": 14.59, 
-        "lng": 120.98, 
-        "type": "Carrier",
-        "status": "部署中",
-        "description": "目前位於西太平洋區域"
-    },
-    {
-        "name": "橫須賀海軍基地 (United States Fleet Activities Yokosuka)",
-        "lat": 35.28, 
-        "lng": 139.67, 
-        "type": "Naval Base",
-        "status": "常駐",
-        "description": "美軍在遠東的主要海軍基地"
-    },
-    {
-        "name": "雷根號航空母艦 (USS Ronald Reagan)",
-        "lat": 35.29,
-        "lng": 139.66,
-        "type": "Carrier",
-        "status": "維修中",
-        "description": "目前停泊於橫須賀"
-    }
+    # --- 太平洋/印太地區 ---
+    {"name": "橫須賀海軍基地 (日本)", "lat": 35.28, "lng": 139.67, "type": "海軍基地", "status": "常駐", "description": "第七艦隊母港"},
+    {"name": "嘉手納空軍基地 (沖繩)", "lat": 26.35, "lng": 127.76, "type": "空軍基地", "status": "常駐", "description": "遠東最大空軍基地"},
+    {"name": "關島阿普拉港 (美屬關島)", "lat": 13.44, "lng": 144.66, "type": "海軍基地", "status": "常駐", "description": "第二島鏈核心據點"},
+    {"name": "珍珠港-希卡姆聯合基地 (夏威夷)", "lat": 21.34, "lng": -157.94, "type": "聯合基地", "status": "常駐", "description": "印太司令部所在地"},
+    
+    # --- 歐洲/地中海地區 ---
+    {"name": "拉姆施泰因空軍基地 (德國)", "lat": 49.43, "lng": 7.60, "type": "空軍基地", "status": "常駐", "description": "駐歐美空軍總部"},
+    {"name": "拿坡里海軍支援設施 (義大利)", "lat": 40.88, "lng": 14.28, "type": "海軍基地", "status": "常駐", "description": "第六艦隊總部"},
+    {"name": "羅塔海軍基地 (西班牙)", "lat": 36.64, "lng": -6.34, "type": "海軍基地", "status": "常駐", "description": "控制直布羅陀海峽的關鍵"},
+    
+    # --- 中東/非洲地區 ---
+    {"name": "第五艦隊司令部 (巴林)", "lat": 26.21, "lng": 50.60, "type": "海軍基地", "status": "常駐", "description": "監控波斯灣戰略要地"},
+    {"name": "烏岱德空軍基地 (卡達)", "lat": 25.12, "lng": 51.31, "type": "空軍基地", "status": "常駐", "description": "中東地區最大的美軍駐地"},
+    {"name": "迪亞哥加西亞基地 (英屬印度洋)", "lat": -7.31, "lng": 72.41, "type": "聯合基地", "status": "常駐", "description": "印度洋戰略中轉站"},
+    
+    # --- 航空母艦打擊群 (範例座標，隨時變動) ---
+    {"name": "羅斯福號航空母艦 (CVN-71)", "lat": 14.59, "lng": 120.98, "type": "航空母艦", "status": "部署中", "description": "目前執行西太平洋巡邏"},
+    {"name": "雷根號航空母艦 (CVN-76)", "lat": 35.29, "lng": 139.66, "type": "航空母艦", "status": "維護中", "description": "停泊於橫須賀"}
 ]
-
-# 將數據存成 JSON 檔案，讓 JavaScript 可以讀取
-with open('military.json', 'w', encoding='utf-8') as f:
-    json.dump(military_units, f, ensure_ascii=False, indent=4)
-
-print("軍事數據已成功轉換為 JSON 格式！")
