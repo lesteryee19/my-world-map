@@ -1,0 +1,26 @@
+[
+    {
+        "name": "羅斯福號航空母艦 (USS Theodore Roosevelt)",
+        "lat": 14.59,
+        "lng": 120.98,
+        "type": "Carrier",
+        "status": "部署中",
+        "description": "目前位於西太平洋區域"
+    },
+    {
+        "name": "橫須賀海軍基地 (United States Fleet Activities Yokosuka)",
+        "lat": 35.28,
+        "lng": 139.67,
+        "type": "Naval Base",
+        "status": "常駐",
+        "description": "美軍在遠東的主要海軍基地"
+    },
+    {
+        "name": "雷根號航空母艦 (USS Ronald Reagan)",
+        "lat": 35.29,
+        "lng": 139.66,
+        "type": "Carrier",
+        "status": "維修中",
+        "description": "目前停泊於橫須賀"
+    }
+]

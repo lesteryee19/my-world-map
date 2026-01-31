@@ -3,37 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的可編輯世界地圖</title>
+    <title>我的全球軍事部署地圖</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
-        /* 設定地圖與頁面樣式 */
         body { margin: 0; padding: 0; font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f4f4; }
-        header { background: #333; color: white; padding: 10px; text-align: center; }
-        #map { height: 80vh; width: 95%; margin: 10px auto; border: 2px solid #333; border-radius: 8px; }
+        header { background: #1a1a1a; color: white; padding: 15px; text-align: center; border-bottom: 3px solid #c0392b; }
+        #map { height: 75vh; width: 98%; margin: 10px auto; border: 2px solid #333; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .controls { text-align: center; margin: 10px; }
         button { 
             padding: 8px 16px; 
-            background-color: #e74c3c; 
+            margin: 0 5px;
             color: white; 
             border: none; 
             border-radius: 4px; 
             cursor: pointer; 
-            font-size: 14px;
+            font-weight: bold;
         }
-        button:hover { background-color: #c0392b; }
+        .btn-clear { background-color: #e74c3c; }
+        .btn-import { background-color: #3498db; }
+        .btn-clear:hover { background-color: #c0392b; }
+        .btn-import:hover { background-color: #2980b9; }
+        .popup-military { color: #c0392b; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>我的自訂編輯地圖</h1>
+        <h1>全球軍事部署與個人標記地圖</h1>
     </header>
 
     <div class="controls">
-        <button onclick="clearMap()">🗑️ 清空所有標記</button>
-        <p style="font-size: 0.9em; color: #666;">提示：點擊地圖任何地方即可新增標記</p>
+        <button class="btn-clear" onclick="clearMap()">🗑️ 清空所有標記</button>
+        <input type="file" id="fileInput" accept=".json" style="display:none">
+        <button class="btn-import" onclick="document.getElementById('fileInput').click()">📂 匯入 JSON 數據</button>
+        <p style="font-size: 0.85em; color: #666;">提示：點擊地圖新增個人標記；自動讀取同資料夾下的 military.json 檔案</p>
     </div>
 
     <div id="map"></div>
@@ -41,45 +46,85 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-    // 初始化地圖：重點在於 worldCopyJump 與 minZoom/maxZoom 的配合
-    const map = L.map('map', {
-        worldCopyJump: true,      // 當你滑過經線 180 度時，它會自動把你「傳送」回原點，實現無限循環
-        center: [20, 0],          // 初始中心點
-        zoom: 2,                  // 初始縮放
-        minZoom: 2,               // 限制最小縮放，避免縮太小時同時看到兩個世界
-        maxBoundsViscosity: 0.5,
-        bounceAtZoomLimits: true
-    });
+        // 1. 初始化地圖：設定「單一地球」循環
+        const map = L.map('map', {
+            worldCopyJump: true,      // 往左/右滑動時自動跳轉回原點，實現無限循環
+            center: [20, 0],          
+            zoom: 2,                  
+            minZoom: 2,               // 限制最小縮放，避免看到重複的世界
+            maxBoundsViscosity: 0.5
+        });
 
-    // 換上一個更像 Google Maps 的乾淨底圖
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap',
-        noWrap: false             // 必須設為 false，地圖才會連續拼接
-    }).addTo(map);
+        // 2. 載入簡潔的底圖 (CartoDB Positron - 類似 Google Maps 風格)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }).addTo(map);
 
-    // --- 以下是你原本的 LocalStorage 存檔功能 ---
-    let savedLocations = JSON.parse(localStorage.getItem('my_map_marks')) || [];
-    savedLocations.forEach(loc => {
-        L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
-    });
+        // --- 功能 A: 個人標記 (LocalStorage) ---
+        let savedLocations = JSON.parse(localStorage.getItem('my_map_marks')) || [];
 
-    map.on('click', function(e) {
-        const text = prompt("你想為這個地點標註什麼？");
-        if (text) {
-            L.marker(e.latlng).addTo(map).bindPopup(text).openPopup();
-            const newLoc = { lat: e.latlng.lat, lng: e.latlng.lng, text: text };
-            savedLocations.push(newLoc);
-            localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
+        // 畫出原本存好的點
+        savedLocations.forEach(loc => {
+            L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
+        });
+
+        // 點擊新增標記
+        map.on('click', function(e) {
+            const text = prompt("請輸入此地點的備註：");
+            if (text) {
+                L.marker(e.latlng).addTo(map).bindPopup(text).openPopup();
+                const newLoc = { lat: e.latlng.lat, lng: e.latlng.lng, text: text };
+                savedLocations.push(newLoc);
+                localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
+            }
+        });
+
+        // --- 功能 B: 自動讀取軍事數據 (military.json) ---
+        fetch('military.json')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(unit => {
+                    // 使用預設圖釘，但內容設定為軍事風格
+                    const marker = L.marker([unit.lat, unit.lng]).addTo(map);
+                    const content = `
+                        <div class="popup-military">[${unit.type}]</div>
+                        <strong>${unit.name}</strong><br>
+                        狀態: ${unit.status}<br>
+                        ${unit.description}
+                    `;
+                    marker.bindPopup(content);
+                });
+                console.log("軍事數據加載成功");
+            })
+            .catch(err => console.log("目前沒有找到 military.json 檔案"));
+
+        // --- 功能 C: 匯入與清除 ---
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    data.forEach(loc => {
+                        L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.text);
+                        savedLocations.push(loc);
+                    });
+                    localStorage.setItem('my_map_marks', JSON.stringify(savedLocations));
+                    alert("匯入成功！");
+                } catch (err) {
+                    alert("JSON 格式不正確");
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function clearMap() {
+            if(confirm("確定要刪除所有標記嗎？")) {
+                localStorage.removeItem('my_map_marks');
+                location.reload();
+            }
         }
-    });
-
-    function clearMap() {
-        if(confirm("確定要刪除所有標記嗎？")) {
-            localStorage.removeItem('my_map_marks');
-            location.reload();
-        }
-    }
-</script>
     </script>
 </body>
 </html>
